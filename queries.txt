@@ -1,0 +1,95 @@
+🎾 TENNIS TOURNAMENT - PromQL QUERIES
+Copy to Prometheus UI: http://localhost:9090
+
+# === SYSTEM METRICS ===
+
+# 1. JVM Heap Memory Usage (bytes)
+jvm_memory_used_bytes{area="heap"}
+# Calculation: Current heap memory used by Java
+
+# 2. Max Heap Memory Available
+jvm_memory_max_bytes{area="heap"}
+# Shows maximum heap configured for JVM
+
+# 3. CPU Usage by Java Process (0.0-1.0 = 0%-100%)
+process_cpu_usage
+# Percentage of CPU used by this application
+
+# 4. Live Threads Count
+jvm_threads_live_threads
+# Total threads currently running
+
+# === HTTP METRICS ===
+
+# 5. Requests Per Second (RPS)
+rate(http_server_requests_seconds_count[1m])
+# Calculation: requests per second averaged over 1 minute
+
+# 6. GET Requests Rate
+rate(http_server_requests_seconds_count{method="GET"}[1m])
+# GET requests per second
+
+# 7. Club API Requests
+rate(http_server_requests_seconds_count{uri="/api/clubs"}[1m])
+# Popularity of clubs endpoint
+
+# 8. Average Response Time (seconds)
+http_server_requests_seconds_sum / http_server_requests_seconds_count
+# Calculation: total time ÷ total requests = average
+
+# 9. Response Time for /api/clubs
+http_server_requests_seconds_sum{uri="/api/clubs"} / http_server_requests_seconds_count{uri="/api/clubs"}
+# Average response time specifically for clubs endpoint
+
+# 10. Error Rate (5xx)
+rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+# Server errors (500, 502, etc.) per minute
+
+# === DATABASE ===
+
+# 11. Active DB Connections
+hikaricp_connections_active
+# Currently used database connections
+
+# 12. Connection Pool Usage
+(hikaricp_connections_active / (hikaricp_connections_active + hikaricp_connections_idle)) * 100
+# Percentage of connection pool in use
+
+# === ADVANCED ANALYSIS ===
+
+# 13. Top 3 Endpoints by Request Rate
+topk(3, rate(http_server_requests_seconds_count[5m]))
+# Shows 3 most popular endpoints
+
+# 14. 95th Percentile Response Time
+histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))
+# 95% of requests are faster than this value
+
+# 15. Error Percentage
+(
+  sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) 
+  / 
+  sum(rate(http_server_requests_seconds_count[5m]))
+) * 100
+# Calculation: (errors ÷ total requests) × 100
+
+# === QUICK CHECKS ===
+
+# 16. Is App Receiving Traffic?
+sum(rate(http_server_requests_seconds_count[1m])) > 0
+# Returns 1 if traffic > 0, 0 if no traffic
+
+# 17. Memory Health Check
+(jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) < 0.8
+# Returns 1 if heap usage < 80%, 0 if above
+
+# 18. Response Time Alert
+(
+  http_server_requests_seconds_sum / http_server_requests_seconds_count
+) > 1
+# Returns 1 if average response > 1 second
+
+# === LEARNING TIPS ===
+# Change intervals: [1m], [5m], [15m]
+# Add filters: {uri="/api/tournaments"}, {method="POST"}
+# Combine metrics: a + b, a / b, a * 100
