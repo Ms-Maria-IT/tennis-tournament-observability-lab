@@ -1,7 +1,7 @@
-# Tennis Tournament Observability Lab
+# Tennis Services Observability Lab
 
 > A hands-on laboratory for learning metrics, monitoring and observability 
-> using a real Spring Boot tennis tournament application.
+> using a real Spring Boot tennis applications.
 
 ## Lab Objectives:
 - 📊 Learn Prometheus metrics collection and visualization
@@ -11,7 +11,7 @@
 - 📈 Build monitoring intuition for backend services
 
 ## Quick Start:
-1. Run tennis app https://github.com/Ms-Maria-IT/tennis-tournament-service: `./gradlew bootRun`
+1. Run tennis apps:`./gradlew bootRun`
 2. Start Prometheus: `./start-prometheus.sh`
 3. Generate traffic: `./traffic-generator.sh`
 4. Open Prometheus: http://localhost:9090
